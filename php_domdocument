@@ -1,0 +1,273 @@
+详解PHP使用DOMDocument类遍历、增加、修改、删除XML节点操作
+
+Dom（Document object model）文档-对象-模型，核心思想是把一个Xml文件看成一个对象模型，然后通过对象的方式来操作Xml文件。我们先总结出DOM对象的属性方法，在分别用案例说明其应用！
+DOMDocument 属性：
+Attributes 存储节点的属性列表(只读)
+childNodes 存储节点的子节点列表(只读)
+dataType 返回此节点的数据类型
+Definition 以DTD或XML模式给出的节点的定义(只读)
+Doctype 指定文档类型节点(只读)
+documentElement 返回文档的根元素(可读写)
+firstChild 返回当前节点的第一个子节点(只读)
+Implementation 返回XMLDOMImplementation对象
+lastChild 返回当前节点最后一个子节点(只读)
+nextSibling 返回当前节点的下一个兄弟节点(只读)
+nodeName 返回节点的名字(只读)
+nodeType 返回节点的类型(只读)
+nodeTypedValue 存储节点值(可读写)
+nodeValue 返回节点的文本(可读写)
+ownerDocument 返回包含此节点的根文档(只读)
+parentNode 返回父节点(只读)
+Parsed 返回此节点及其子节点是否已经被解析(只读)
+Prefix 返回名称空间前缀(只读)
+preserveWhiteSpace 指定是否保留空白(可读写)
+previousSibling 返回此节点的前一个兄弟节点(只读)
+Text 返回此节点及其后代的文本内容(可读写)
+url 返回最近载入的XML文档的URL(只读)
+Xml 返回节点及其后代的XML表示(只读)
+
+DOMDocument 方法：
+appendChild 为当前节点添加一个新的子节点,放在最后的子节点后
+cloneNode 返回当前节点的拷贝
+createAttribute 创建新的属性
+createCDATASection 创建包括给定数据的CDATA段
+createComment 创建一个注释节点
+createDocumentFragment 创建DocumentFragment对象
+createElement_x 创建一个元素节点
+createEntityReference 创建EntityReference对象
+createNode 创建给定类型,名字和命名空间的节点
+createPorcessingInstruction 创建操作指令节点
+createTextNode 创建包括给定数据的文本节点
+getElementsByTagName 返回指定名字的元素集合
+hasChildNodes 返回当前节点是否有子节点
+insertBefore 在指定节点前插入子节点
+Load 导入指定位置的XML文档
+loadXML 导入指定字符串的XML文档
+removeChild 从子结点列表中删除指定的子节点
+replaceChild 从子节点列表中替换指定的子节点
+Save 把XML文件存到指定节点
+selectNodes 对节点进行指定的匹配,并返回匹配节点列表
+selectSingleNode 对节点进行指定的匹配,并返回第一个匹配节点
+transformNode 使用指定的样式表对节点及其后代进行转换
+
+1、创建一个Xml文件
+<?php
+    //实例化一个DomDocument对象
+    $dom = new DomDocument('1.0', 'UTF-8');
+    //如果文件不存在就创建一个
+    if (!file_exists("xml_test.xml")){
+    	header("Content-Type: text/plain");
+    	$root = $dom->createElement("class");
+    	$dom->appendChild($root);
+    	$dom->save("xml_test.xml");
+    } else{
+    	$dom->load("xml_test.xml");  
+    }
+    print $dom->saveXML();
+?>
+
+2、增加元素
+<?php 
+    //addElementsxml.php 
+    $dom = new DOMDocument("1.0", "UTF-8");
+    
+    $dom->load("xml_test.xml");
+    
+    $root_class = $dom->getElementsByTagName("class");
+    $i = 0;
+   // for($i = 0;$i < 4; $i++){
+    	$root_class_node = $root_class->item($i);
+    	$stu_node=$dom->createElement("student");
+    	$stu_node->setAttribute("xingbie", "man");
+    	$stu_node_name=$dom->createElement("name","name".$i);
+    	//设置属性
+    	$stu_node_name->setAttribute("hel", "23");
+    	$stu_node_age=$dom->createElement("age","21");
+    	$stu_node_introduce=$dom->createElement("introduce","1111");
+    	$stu_node->appendChild($stu_node_name);
+    	$stu_node->appendChild($stu_node_age);
+    	$stu_node->appendChild($stu_node_introduce);
+    	$root_class_node->appendChild($stu_node);
+   // }
+    $dom->save("xml_test.xml");
+    print $dom->saveXML();
+?>
+
+3、遍历元素
+<?php
+    //getNode.php
+    //解析一个文件的步骤
+    //1创建一个对象，表示文档
+    $dom = new DOMDocument("1.0", "UTF-8");
+    //2制定加载那个Xml，解析那个文件
+    $dom->load("xml_test.xml");
+    //3 获取你关新节点
+    $stu_nodes = $dom->getElementsByTagName("student");
+    
+    for ($i=0;$i<$stu_nodes->length;$i++){
+    	//取出每个学生
+    	$stu_node = $stu_nodes->item($i);
+    	for($i=0;$i<$stu_node->childNodes->length;$i++){
+    	    echo $stu_node->childNodes->item($i)->nodeValue;
+    	    echo "<br/>";
+    	}
+    }
+?>
+
+4、删除元素
+<?php
+    //解析一个文件的步骤
+    //1创建一个对象，表示文档
+    $dom = new DOMDocument("1.0", "UTF-8");
+    //2制定加载那个Xml，解析那个文件
+    $dom->load("xml_test.xml");
+    //3 获取你关新节点
+    $stu_nodes = $dom->getElementsByTagName("student");
+    $stu_node=$stu_nodes->item($stu_nodes->length -1);
+    $stu_node->parentNode->removeChild($stu_node);
+    
+    $dom->save("xml_test.xml");
+ ?>
+5、修改元素属性
+<?php
+    //1创建一个对象，表示文档
+    $dom = new DOMDocument("1.0", "UTF-8");
+    //2制定加载那个Xml，解析那个文件
+    $dom->load("xml_test.xml");
+    
+    //找到这个学生
+    $stus=$dom->getElementsByTagName("age")->item(0);
+    $stus->nodeValue=100;
+    
+    $dom->save("xml_test.xml");
+    ?>
+
+
+通过上面简单的操作方法，大致了解了DomDocument对象的应用，往往我们对xml文件操作最多的是读取操作，而且操作的xml文档结构会比较复杂；接下来给大家演示，用DomDocument解析一个多层次的xml结构的文档。
+Jiari.xml文档：
+<?xml version="1.0" encoding="UTF-8"?>
+<daysOff-overTime>
+    <year>
+        <yearName>2012</yearName>
+        <holiday>
+            <holidayName>元旦</holidayName>
+            <daysOff>
+                <from>2012-1-1</from>
+                <to>2012-1-3</to>
+            </daysOff>
+            <overTime>
+                <day>2011-12-31</day>
+            </overTime>
+        </holiday>
+
+        <holiday>
+            <holidayName>春节</holidayName>
+            <daysOff>
+                <from>2012-1-22</from>
+                <to>2012-1-28</to>
+            </daysOff>
+            <overTime>
+                <day>2012-1-21</day>
+                <day>2012-1-29</day>
+            </overTime>
+        </holiday>
+
+        <holiday>
+            <holidayName>清明节</holidayName>
+            <daysOff>
+                <from>2012-4-2</from>
+                <to>2012-4-4</to>
+            </daysOff>
+            <overTime>
+                <day>2012-3-31</day>
+                <day>2012-4-1</day>
+            </overTime>
+        </holiday>
+
+        <holiday>
+            <holidayName>劳动节</holidayName>
+            <daysOff>
+                <from>2012-4-29</from>
+                <to>2012-5-1</to>
+            </daysOff>
+            <overTime>
+                <day>2012-4-28</day>
+            </overTime>
+        </holiday>
+
+        <holiday>
+            <holidayName>端午节</holidayName>
+            <daysOff>
+                <from>2012-6-22</from>
+                <to>2012-6-24</to>
+            </daysOff>
+        <overTime/>
+    </holiday>
+
+    <holiday>
+        <holidayName>中秋节、国庆节</holidayName>
+        <daysOff>
+            <from>2012-9-30</from>
+            <to>2012-10-7</to>
+        </daysOff>
+        <overTime>
+            <day>2012-9-26</day>
+        </overTime>
+    </holiday>
+    </year>
+</daysOff-overTime>
+
+DOMDocument对象遍历输出假日数据：
+<?php
+//读取xml文件
+$xmlDoc = new DOMDocument();
+$xmlDoc->load('http://127.0.0.1/holiday.xml');
+
+//获得该xml文件中的所有年份
+$years = $xmlDoc->getElementsByTagName("year");
+
+//对每一个年份进行处理
+foreach($years as $year){
+    
+    //获得具体的年份值
+    $yearNames = $year->getElementsByTagName("yearName");
+    $yearName = $yearNames->item(0)->nodeValue;
+    echo $yearName.'年'.'</br>';
+    
+    //获得该年份下所有的假日
+    $holidays = $year->getElementsByTagName("holiday");
+    
+    //对每一个假日进行处理
+    foreach($holidays as $holiday){
+        //获得假日名称
+        $holidayNames = $holiday->getElementsByTagName("holidayName");
+        $holidayName = $holidayNames->item(0)->nodeValue;
+        echo iconv('utf-8','gb2312', $holidayName).': '.'</br>';
+        
+        //获得假日的具体放假日期
+        $daysOffs = $holiday->getElementsByTagName("daysOff");
+        $daysOff = $daysOffs->item(0);    
+        $froms = $daysOff->getElementsByTagName("from");
+        $from = $froms->item(0)->nodeValue;
+        $tos = $daysOff->getElementsByTagName("to");
+        $to = $tos->item(0)->nodeValue;
+        echo '假期为：'.$from.' 至 '.$to.'</br>';
+        
+        //获得针对该假日的调休日期
+        $overTimes = $holiday->getElementsByTagName("overTime");
+        $overTime = $overTimes->item(0);    
+        $days = $overTime->getElementsByTagName("day");    
+        //通过判断，有调休日期则显示，没有则不显示
+        if($days->length!=0){
+            echo '调休日为：';
+            foreach($days as $day){
+                echo $day->nodeValue.' ';
+            }
+            echo '</br>';
+        }
+        echo '</br>';
+    }
+}
+?>
+
+
